@@ -2,7 +2,7 @@
 ! Title:  Self-used Android DNS RuleSet
 ! Description: This self-use DNS ruleset is a supplement to AdGuard's DNS blocking ruleset on Android. It is for personal use only. It is not updated regularly and it is not recommended to subscribe to it.
 ! Homepage: https://github.com/Successful72/YcsAdGCustomedRuleSets
-! Version: 2024/10/15
+! Version: 2024/10/16
 
 ! Rules
 # ---------------------------------- 白名单DNS规则 ---------------------------------- #
