@@ -43,4 +43,4 @@ jobs:
           SYNC_TOKEN:     ${{ secrets.SYNC_TOKEN }}
           # push 触发时增量同步；定时或手动触发时全量同步
           SYNC_FORCE_ALL: ${{ github.event_name != 'push' && 'true' || 'false' }}
-        run: python Scripts/upload_rules.py
+        run: python Sync/sync.py
