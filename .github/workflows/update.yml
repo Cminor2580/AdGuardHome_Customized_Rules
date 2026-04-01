@@ -9,7 +9,6 @@ on:
     branches:
       - main
     paths:
-      # 仅当这 3 个文件本身有改动时才触发，新增/重命名/其他文件不受影响
       - "Rules/Android/Android_DNS_Rules.txt"
       - "Rules/iOS/iOS_DNS_Rules.txt"
       - "Rules/Universal/Universal_DNS_Rules.txt"
@@ -29,6 +28,9 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+        with:
+          # 拉取完整 commit 历史，确保 git diff HEAD~1 可以正常工作
+          fetch-depth: 2
 
       - name: Setup Python
         uses: actions/setup-python@v5
@@ -37,6 +39,8 @@ jobs:
 
       - name: Run
         env:
-          SYNC_HOST:  ${{ secrets.SYNC_HOST }}
-          SYNC_TOKEN: ${{ secrets.SYNC_TOKEN }}
-        run: python Sync/sync.py
+          SYNC_HOST:      ${{ secrets.SYNC_HOST }}
+          SYNC_TOKEN:     ${{ secrets.SYNC_TOKEN }}
+          # push 触发时增量同步；定时或手动触发时全量同步
+          SYNC_FORCE_ALL: ${{ github.event_name != 'push' && 'true' || 'false' }}
+        run: python Scripts/upload_rules.py
