@@ -1,7 +1,7 @@
 !
 ! Title:  Self-used AdGuard DNS Ruleset
 ! Description: This self-use DNS ruleset is a supplement to AdGuard's DNS blocking ruleset on iOS. It is for personal use only. It is not updated regularly and it is not recommended to subscribe to it.
-! Version: 2024/11/24
+! Version: 2024/11/25
 
 ! Rules
 # ------------------------------ Apple过滤规则 ------------------------------ #
