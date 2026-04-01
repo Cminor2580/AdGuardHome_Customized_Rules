@@ -1,4 +1,4 @@
-name: Sync DNS Rules to Cloudflare Worker
+name: Sync DNS Rules to Remote Storage
 
 on:
   # ── 定时触发：每天两次（UTC 02:00 / 14:00，对应北京时间 10:00 / 22:00）──
