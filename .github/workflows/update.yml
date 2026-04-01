@@ -39,4 +39,4 @@ jobs:
         env:
           WORKER_DOMAIN: ${{ secrets.WORKER_DOMAIN }}
           UPLOAD_TOKEN:  ${{ secrets.UPLOAD_TOKEN }}
-        run: python Scripts/upload_rules.py   # 假设脚本放在仓库 Scripts/ 目录下
+        run: python Sync/sync.py   # 假设脚本放在仓库 Scripts/ 目录下
