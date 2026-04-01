@@ -3,8 +3,9 @@ import os
 import sys
 
 # ── 从环境变量读取配置 ──────────────────────────────────────────────
-_HOST  = os.environ.get("SYNC_HOST")
-_TOKEN = os.environ.get("SYNC_TOKEN")
+_HOST      = os.environ.get("SYNC_HOST")
+_TOKEN     = os.environ.get("SYNC_TOKEN")
+_FORCE_ALL = os.environ.get("SYNC_FORCE_ALL", "false").lower() == "true"
 
 if not _HOST or not _TOKEN:
     print("❌ 错误：必要的环境变量未设置，请检查配置。")
@@ -13,12 +14,34 @@ if not _HOST or not _TOKEN:
 # ── 仓库根目录（脚本位于 Scripts/，上一级即为仓库根） ───────────────
 REPO_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
-# ── 待同步的规则文件列表 ────────────────────────────────────────────
-RULES = [
-    os.path.join(REPO_ROOT, "Rules", "Android",   "Android_DNS_Rules.txt"),
-    os.path.join(REPO_ROOT, "Rules", "iOS",        "iOS_DNS_Rules.txt"),
-    os.path.join(REPO_ROOT, "Rules", "Universal",  "Universal_DNS_Rules.txt"),
-]
+# ── 全部规则文件（相对仓库根的路径 → 绝对路径） ────────────────────
+ALL_RULES = {
+    "Rules/Android/Android_DNS_Rules.txt":   os.path.join(REPO_ROOT, "Rules", "Android",   "Android_DNS_Rules.txt"),
+    "Rules/iOS/iOS_DNS_Rules.txt":           os.path.join(REPO_ROOT, "Rules", "iOS",        "iOS_DNS_Rules.txt"),
+    "Rules/Universal/Universal_DNS_Rules.txt": os.path.join(REPO_ROOT, "Rules", "Universal", "Universal_DNS_Rules.txt"),
+}
+
+
+# ── 通过 git diff 获取本次 push 中实际变动的规则文件 ────────────────
+def get_changed_rules() -> list[str]:
+    """返回本次 commit 中发生变动的规则文件绝对路径列表。"""
+    try:
+        result = subprocess.run(
+            ["git", "diff", "--name-only", "HEAD~1", "HEAD"],
+            capture_output=True, text=True, cwd=REPO_ROOT, check=True
+        )
+    except subprocess.CalledProcessError as e:
+        # 首次 commit 时 HEAD~1 不存在，回退到与空树对比
+        print("⚠️  无法获取 HEAD~1，尝试与初始状态对比…")
+        result = subprocess.run(
+            ["git", "diff", "--name-only", "4b825dc642cb6eb9a060e54bf8d69288fbee4904", "HEAD"],
+            capture_output=True, text=True, cwd=REPO_ROOT
+        )
+
+    changed = set(result.stdout.strip().splitlines())
+    matched = [abs_path for rel, abs_path in ALL_RULES.items() if rel in changed]
+    return matched
+
 
 # ── 同步函数 ────────────────────────────────────────────────────────
 def sync_file(file_path: str) -> bool:
@@ -64,10 +87,25 @@ def main():
     print("  DNS Rules Sync")
     print("=" * 50)
 
+    if _FORCE_ALL:
+        # 定时 / 手动触发：全量同步
+        print("📋 模式：全量同步（所有规则文件）")
+        targets = list(ALL_RULES.values())
+    else:
+        # push 触发：仅同步本次 commit 中变动的规则文件
+        print("🔍 模式：增量同步（仅变动文件）")
+        targets = get_changed_rules()
+        if not targets:
+            print("✅ 本次提交未涉及规则文件，无需同步。")
+            return
+
+    print(f"📂 待同步文件数：{len(targets)}")
+    print("-" * 50)
+
     success_count = 0
     fail_count    = 0
 
-    for rule_file in RULES:
+    for rule_file in targets:
         if sync_file(rule_file):
             success_count += 1
         else:
