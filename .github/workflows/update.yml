@@ -27,15 +27,15 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: 📥 检出仓库
+      - name: 检出仓库
         uses: actions/checkout@v4
 
-      - name: 🐍 设置 Python 环境
+      - name: 设置 Python 环境
         uses: actions/setup-python@v5
         with:
           python-version: "3.12"
 
-      - name: 🚀 执行上传脚本
+      - name: 准备上传
         env:
           WORKER_DOMAIN: ${{ secrets.WORKER_DOMAIN }}
           UPLOAD_TOKEN:  ${{ secrets.UPLOAD_TOKEN }}
