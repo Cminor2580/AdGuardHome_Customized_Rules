@@ -7,7 +7,7 @@ WORKER_DOMAIN = os.environ.get("WORKER_DOMAIN")
 UPLOAD_TOKEN  = os.environ.get("UPLOAD_TOKEN")
 
 if not WORKER_DOMAIN or not UPLOAD_TOKEN:
-    print("❌ 错误：环境变量 WORKER_DOMAIN 或 UPLOAD_TOKEN 未设置。")
+    print("❌ 错误：某个环境变量没有设置。")
     sys.exit(1)
 
 # ── 仓库根目录（脚本所在目录的上级，即仓库根） ──────────────────────
@@ -50,7 +50,7 @@ def upload_file(file_path: str) -> bool:
     if result.returncode == 0:
         print(f"✅ 上传成功：{file_name}")
         if result.stdout.strip():
-            print(f"   Worker 响应：{result.stdout.strip()}")
+            print(f"   对端响应：{result.stdout.strip()}")
         return True
     else:
         print(f"❌ 上传失败：{file_name}")
