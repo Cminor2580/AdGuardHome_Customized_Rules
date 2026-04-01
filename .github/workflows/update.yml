@@ -1,42 +1,42 @@
-name: Sync DNS Rules to Remote Storage
+name: Sync Rules
 
 on:
-  # ── 定时触发：每天两次（UTC 02:00 / 14:00，对应北京时间 10:00 / 22:00）──
   schedule:
-    - cron: "0 2 * * *"
-    - cron: "0 14 * * *"
+    - cron: "0 2 * * *"    # UTC 02:00 = 北京时间 10:00
+    - cron: "0 14 * * *"   # UTC 14:00 = 北京时间 22:00
 
-  # ── 每次 push 到 main 分支时触发 ──────────────────────────────────
   push:
     branches:
       - main
-    paths:                        # 仅规则文件有变动时才触发，节省 Actions 用量
-      - "Rules/**"
+    paths:
+      # 仅当这 3 个文件本身有改动时才触发，新增/重命名/其他文件不受影响
+      - "Rules/Android/Android_DNS_Rules.txt"
+      - "Rules/iOS/iOS_DNS_Rules.txt"
+      - "Rules/Universal/Universal_DNS_Rules.txt"
 
-  # ── 手动触发 ──────────────────────────────────────────────────────
   workflow_dispatch:
     inputs:
       reason:
-        description: "手动触发原因（可选）"
+        description: "触发原因（可选）"
         required: false
         default: "手动同步"
 
 jobs:
-  upload:
-    name: Upload Rules to Cloudflare Worker
+  sync:
+    name: Sync
     runs-on: ubuntu-latest
 
     steps:
-      - name: 检出仓库
+      - name: Checkout
         uses: actions/checkout@v4
 
-      - name: 设置 Python 环境
+      - name: Setup Python
         uses: actions/setup-python@v5
         with:
           python-version: "3.12"
 
-      - name: 准备上传
+      - name: Run
         env:
-          WORKER_DOMAIN: ${{ secrets.WORKER_DOMAIN }}
-          UPLOAD_TOKEN:  ${{ secrets.UPLOAD_TOKEN }}
-        run: python Sync/sync.py   # 假设脚本放在仓库 Scripts/ 目录下
+          SYNC_HOST:  ${{ secrets.SYNC_HOST }}
+          SYNC_TOKEN: ${{ secrets.SYNC_TOKEN }}
+        run: python Sync/sync.py
